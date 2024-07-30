@@ -40,7 +40,27 @@ defmodule Overload.Exercise do
   @doc false
   def changeset(exercise, attrs) do
     exercise
-    |> cast(attrs, [:name, :force, :level, :mechanic, :equipment, :instructions, :category])
-    |> validate_required([:name, :force, :level, :mechanic, :equipment, :instructions, :category])
+    |> cast(attrs, [
+      :name,
+      :force,
+      :level,
+      :mechanic,
+      :equipment,
+      :instructions,
+      :category,
+      :primary_muscles,
+      :secondary_muscles
+    ])
+    |> validate_required([
+      :name,
+      :force,
+      :level,
+      :mechanic,
+      :equipment,
+      :instructions,
+      :category,
+      :primary_muscles,
+      :secondary_muscles
+    ])
   end
 end
