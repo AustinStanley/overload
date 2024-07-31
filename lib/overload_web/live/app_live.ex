@@ -5,12 +5,14 @@ defmodule OverloadWeb.AppLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.hero class="cursor-pointer bg-gradient-to-br from-teal-100 to-white" phx_click="train">
-      Train
-    </.hero>
-    <.hero class="cursor-pointer bg-gradient-to-br from-amber-100 to-white" phx_click="plan">
-      Plan
-    </.hero>
+    <div class="flex flex-col gap-4">
+      <.hero class="cursor-pointer bg-gradient-to-br from-teal-100 to-white" phx_click="train">
+        Train
+      </.hero>
+      <.hero class="cursor-pointer bg-gradient-to-br from-amber-100 to-white" phx_click="plan">
+        Plan
+      </.hero>
+    </div>
     """
   end
 
