@@ -16,6 +16,7 @@ defmodule Overload.Application do
       {Finch, name: Overload.Finch},
       # Start a worker by calling: Overload.Worker.start_link(arg)
       # {Overload.Worker, arg},
+      {Mongo, name: :mongo, database: "overload", pool_size: 3},
       # Start to serve requests, typically the last entry
       OverloadWeb.Endpoint
     ]

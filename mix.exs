@@ -58,7 +58,8 @@ defmodule Overload.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
-      {:bloom, "~> 0.0.7"}
+      {:bloom, "~> 0.0.7"},
+      {:mongodb_driver, "~> 1.4.0"}
     ]
   end
 
