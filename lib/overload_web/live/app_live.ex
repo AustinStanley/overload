@@ -2,6 +2,8 @@ defmodule OverloadWeb.AppLive do
   use OverloadWeb, :live_view
   import OverloadWeb.Components.Hero
 
+  alias OverloadWeb.Components.Live.PlanComponent
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -11,9 +13,7 @@ defmodule OverloadWeb.AppLive do
         train
       </.link>
     <% :plan -> %>
-      <.link patch={~p"/app"}>
-        plan
-      </.link>
+      <.live_component module={PlanComponent} id="plan" />
     <% _ -> %>
       <div class="flex flex-col gap-4">
         <.hero class="cursor-pointer bg-gradient-to-br from-teal-100 to-white" phx-click="train">
