@@ -6,7 +6,7 @@ defmodule OverloadWeb.Components.Hero do
   """
 
   attr(:class, :string, default: "", doc: "CSS class for the hero component")
-  attr(:phx_click, :string, required: false)
+  attr(:rest, :global)
   slot(:inner_block, required: true, doc: "Main content block of the hero component")
   slot(:subtitle, required: false, doc: "Subtitle content block")
   slot(:announcement_badge, required: false, doc: "Annoucement badge content block")
@@ -14,7 +14,7 @@ defmodule OverloadWeb.Components.Hero do
 
   def hero(assigns) do
     ~H"""
-    <div class={["container mx-auto max-w-4xl py-32 sm:py-48 lg:py-56", @class]} phx-click={@phx_click}>
+    <div class={["container mx-auto max-w-4xl py-32 sm:py-48 lg:py-56", @class]} {@rest}>
       <div class="hidden sm:mb-8 sm:flex sm:justify-center">
         <div
           :if={@announcement_badge != []}

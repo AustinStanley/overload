@@ -20,6 +20,8 @@ defmodule OverloadWeb.Router do
     get "/", PageController, :home
 
     live "/app", AppLive
+    live "/app/train", AppLive, :train
+    live "/app/plan", AppLive, :plan
   end
 
   # Other scopes may use custom stacks.
