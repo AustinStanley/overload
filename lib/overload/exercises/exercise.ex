@@ -63,4 +63,9 @@ defmodule Overload.Exercise do
       :secondary_muscles
     ])
   end
+
+  def get_muscle_groups(), do: @muscle_groups
+
+  def get_name(%__MODULE__{name: name}), do: name
+
 end
