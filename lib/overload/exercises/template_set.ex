@@ -6,7 +6,8 @@ defmodule Overload.TemplateSet do
     field :rep_range_min, :integer
     field :rep_range_max, :integer
     field :rir, :integer
-    belongs_to :template_exercise_id, TemplateExercise
+    field :n_times, :integer
+    belongs_to :template_exercise, Overload.TemplateExercise
 
     timestamps(type: :utc_datetime)
   end
@@ -14,7 +15,7 @@ defmodule Overload.TemplateSet do
   @doc false
   def changeset(template_set, attrs) do
     template_set
-    |> cast(attrs, [:rep_range_min, :rep_range_max, :rir])
-    |> validate_required([:rep_range_min, :rep_range_max, :rir])
+    |> cast(attrs, [:rep_range_min, :rep_range_max, :rir, :n_times])
+    |> validate_required([:rep_range_min, :rep_range_max, :rir, :n_times])
   end
 end

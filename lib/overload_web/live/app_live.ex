@@ -13,7 +13,7 @@ defmodule OverloadWeb.AppLive do
         train
       </.link>
     <% :plan -> %>
-      <.live_component module={PlanComponent} id="plan" />
+      <.live_component module={PlanComponent} id="plan" action={@plan_action} />
     <% _ -> %>
       <div class="flex flex-col gap-4">
         <.hero class="cursor-pointer bg-gradient-to-br from-teal-100 to-white" phx-click="train">
@@ -38,7 +38,32 @@ defmodule OverloadWeb.AppLive do
   end
 
   @impl true
-  def handle_params(_unsigned_params, _uri, socket) do
-    {:noreply, socket}
+  def handle_params(params, _url, socket) do
+    IO.inspect(params, label: "PARAMS")
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :plan, %{"action" => "plan_meso"}) do
+    socket
+    |> assign(:page_title, "Plan Mesocycle")
+    |> assign(:plan_action, :plan_meso)
+  end
+
+  defp apply_action(socket, :plan, %{"action" => "create_template"}) do
+    socket
+    |> assign(:page_title, "Create Workout Template")
+    |> assign(plan_action: :create_template)
+  end
+
+  defp apply_action(socket, :plan, _params) do
+    socket
+    |> assign(:page_title, "Plan")
+    |> assign(:plan_action, :index)
+  end
+
+  defp apply_action(socket, _live_action, _params) do
+    socket
+    |> assign(:page_title, "App")
+    |> assign(:plan_action, :index)
   end
 end
