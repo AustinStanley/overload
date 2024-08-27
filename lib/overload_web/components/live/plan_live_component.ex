@@ -7,6 +7,7 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
   alias Overload.Template
   alias Overload.Exercise
+  alias Overload.Exercises
 
   @impl true
   def render(assigns) do
@@ -15,8 +16,15 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
       <%= render_content(assigns) %>
 
       <.modal id="add-exercise-modal">
-        <.form for={@exercise_form} phx-change="validate" phx-submit="save" as={:exercise}>
+        <.form for={@exercise_form} phx-change="filter_exercises" phx-submit="save" phx-target={@myself} as={:exercise}>
           <.input type="text" name="name" placeholder="Exercise Name" value={@exercise_form[:name].value} />
+          <div class="flex flex-col gap-4 h-48 overflow-scroll my-4 px-4 border">
+            <%= for %Exercise{name: name} <- @filtered_exercises do %>
+              <div>
+                <%= name %>
+              </div>
+            <% end %>
+          </div>
           <.button type="submit">Add Exercise</.button>
         </.form>
       </.modal>
@@ -28,11 +36,14 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
   def mount(socket) do
     template_form = Template.changeset(%Template{}, %{}) |> to_form()
     exercise_form = Exercise.changeset(%Exercise{}, %{}) |> to_form()
+    exercises = Exercises.get_all()
 
     {:ok, socket
      |> assign(template_form: template_form)
      |> assign(exercise_form: exercise_form)
-     |> assign(template_exercises: [])}
+     |> assign(template_exercises: [])
+     |> assign(all_exercises: exercises)
+     |> assign(filtered_exercises: exercises)}
   end
 
   @impl true
@@ -45,6 +56,12 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
     {:noreply,
      socket
      |> push_patch(to: ~p"/app/plan?action=create_template")}
+  end
+
+  @impl true
+  def handle_event("filter_exercises", %{"name" => name}, %{assigns: %{all_exercises: all_exercises}} = socket) do
+    filtered_exercises = all_exercises |> Enum.filter(fn exercise -> String.contains?(String.downcase(exercise.name), String.downcase(name)) end)
+    {:noreply, assign(socket, :filtered_exercises, filtered_exercises)}
   end
 
   defp render_content(%{action: :plan_meso} = assigns) do

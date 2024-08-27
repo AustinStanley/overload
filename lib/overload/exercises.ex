@@ -7,6 +7,10 @@ defmodule Overload.Exercises do
     Repo.exists?(Exercise)
   end
 
+  def get_all() do
+    Repo.all(Exercise)
+  end
+
   def get_by_force_mechanic_bodypart(force, mechanic, body_part) do
     query =
       from e in Exercise,
