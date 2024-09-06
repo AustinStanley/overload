@@ -17,7 +17,7 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
       <.modal id="add-exercise-modal">
         <.form for={@exercise_form} phx-change="filter_exercises" phx-submit="save" phx-target={@myself} as={:exercise}>
-          <.input type="text" name="name" placeholder="Exercise Name" value={@exercise_form[:name].value} />
+          <.input type="text" name="name" placeholder="Filter" value={@exercise_form[:name].value} />
           <div class="flex flex-col gap-4 h-48 overflow-scroll my-4 px-4 border">
             <%= for %Exercise{name: name} <- @filtered_exercises do %>
               <div>
@@ -25,7 +25,10 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
               </div>
             <% end %>
           </div>
-          <.button type="submit">Add Exercise</.button>
+          <div class="flex justify-between">
+            <.button type="submit">Add Exercise</.button>
+            <.button type="">Create Exercise</.button>
+          </div>
         </.form>
       </.modal>
     </div>
