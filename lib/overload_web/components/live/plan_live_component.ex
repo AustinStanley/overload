@@ -3,7 +3,8 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
   use OverloadWeb, :verified_routes
 
   import OverloadWeb.Components.Hero
-  import OverloadWeb.CoreComponents
+  import OverloadWeb.CoreComponents, except: [button: 1]
+  import SaladUI.Button
 
   alias Overload.Template
   alias Overload.Exercise

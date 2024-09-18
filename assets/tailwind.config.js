@@ -9,17 +9,21 @@ module.exports = {
   content: [
     "./js/**/*.js",
     "../lib/overload_web.ex",
-    "../lib/overload_web/**/*.*ex"
+    "../lib/overload_web/**/*.*ex",
+    "../deps/salad_ui/lib/**/*.ex"
   ],
   theme: {
     extend: {
       colors: {
         brand: "#FD4F00",
+        ...require("./tailwind.colors.json")
       }
     },
   },
   plugins: [
     require("@tailwindcss/forms"),
+    require("@tailwindcss/typography"),
+    require("tailwindcss-animate"),
     // Allows prefixing tailwind classes with LiveView classes to add rules
     // only when LiveView classes are applied, for example:
     //

@@ -60,7 +60,8 @@ defmodule Overload.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.2"},
       {:bloom, "~> 0.0.7"},
-      {:mongodb_driver, "~> 1.4.0"}
+      {:mongodb_driver, "~> 1.4.0"},
+      {:salad_ui, "~> 0.4.2"}
     ]
   end
 
