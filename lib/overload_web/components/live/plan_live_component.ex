@@ -19,17 +19,31 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
       <.modal id="add-exercise-modal">
         <.form for={@exercise_form} phx-change="filter_exercises" phx-submit="save" phx-target={@myself} as={:exercise}>
           <.input type="text" name="name" placeholder="Filter" value={@exercise_form[:name].value} />
+
           <.select :let={select} id="body-part-select" name="body_part" target="my-select" placeholder="Body Part" class="mt-4">
             <.select_trigger instance={select} target="my-select"/>
             <.select_content instance={select}>
               <.select_group>
 
-              <%= for body_part <- Exercise.get_muscle_groups() do %>
+              <%= for body_part <- [:all | Exercise.get_muscle_groups()] do %>
                   <.select_item instance={select} value={body_part} label={body_part |> Atom.to_string() |> String.capitalize()} ></.select_item>
                 <% end %>
               </.select_group>
             </.select_content>
           </.select>
+
+          <.select :let={select} id="equipment-select" name="equipment" target="equipment-select" placeholder="Equipment" class="mt-4">
+            <.select_trigger instance={select} target="equipment-select"/>
+            <.select_content instance={select}>
+              <.select_group>
+
+              <%= for equipment <- ["all" | Exercises.get_all_equipment()] do %>
+                  <.select_item instance={select} value={equipment} label={String.capitalize(equipment)} ></.select_item>
+                <% end %>
+              </.select_group>
+            </.select_content>
+          </.select>
+
           <div class="flex flex-col gap-4 h-48 overflow-scroll my-4 px-4 border">
             <%= for %Exercise{name: name} <- @filtered_exercises do %>
               <div>
@@ -59,14 +73,15 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
      |> assign(template_exercises: [])
      |> assign(all_exercises: exercises)
      |> assign(filtered_exercises: exercises)
-     |> assign(filters: %{name: "", body_part: :all})}
+     |> assign(filters: %{name: "", body_part: "all", equipment: "all"})}
   end
 
   defp apply_filters(exercises, filters) do
     exercises
     |> Enum.filter(fn exercise ->
       String.contains?(String.downcase(exercise.name), String.downcase(filters.name))
-      and (filters.body_part == :all or String.to_atom(filters.body_part) in exercise.primary_muscles)
+      and (filters.body_part == "all" or String.to_atom(filters.body_part) in exercise.primary_muscles)
+      and (filters.equipment == "all" or filters.equipment == exercise.equipment)
     end)
   end
 
@@ -85,6 +100,13 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
   @impl true
   def handle_event("filter_exercises", %{"body_part" => body_part}, %{assigns: %{all_exercises: all_exercises}} = socket) do
     filters = %{socket.assigns.filters | body_part: body_part}
+    res = apply_filters(all_exercises, filters)
+    {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
+  end
+
+  @impl true
+  def handle_event("filter_exercises", %{"equipment" => equipment}, %{assigns: %{all_exercises: all_exercises}} = socket) do
+    filters = %{socket.assigns.filters | equipment: equipment}
     res = apply_filters(all_exercises, filters)
     {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
   end

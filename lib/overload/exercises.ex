@@ -33,6 +33,16 @@ defmodule Overload.Exercises do
     Repo.all(query)
   end
 
+  def get_all_equipment() do
+    query =
+      from e in Exercise,
+        where: not is_nil(e.equipment),
+        select: e.equipment,
+        group_by: e.equipment
+
+    Repo.all(query)
+  end
+
   # Generate functions for each body part and mechanic
 
   @body_parts Overload.Exercise.get_muscle_groups() |> Enum.map(&to_string/1)
