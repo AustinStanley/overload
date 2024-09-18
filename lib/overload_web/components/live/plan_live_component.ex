@@ -4,8 +4,12 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
   import OverloadWeb.Components.Hero
   import OverloadWeb.CoreComponents, except: [button: 1]
+
   import SaladUI.Select
   import SaladUI.Button
+  import SaladUI.Card
+  import SaladUI.Badge
+
   alias Overload.Template
   alias Overload.Exercise
   alias Overload.Exercises
@@ -18,31 +22,49 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
       <.modal id="add-exercise-modal">
         <.form for={@exercise_form} phx-change="filter_exercises" phx-submit="save" phx-target={@myself} as={:exercise}>
-          <.input type="text" name="name" placeholder="Filter" value={@exercise_form[:name].value} />
 
-          <.select :let={select} id="body-part-select" name="body_part" target="my-select" placeholder="Body Part" class="mt-4">
-            <.select_trigger instance={select} target="my-select"/>
-            <.select_content instance={select}>
-              <.select_group>
+        <.card>
+          <.card_header>
+            <.card_title>
+              Filters
+            </.card_title>
+          </.card_header>
+          <.card_content>
+            <.input type="text" name="name" placeholder="Name" value={@exercise_form[:name].value} />
+            <div class="flex gap-4">
+              <.select :let={select} id="body-part-select" name="body_part" target="my-select" placeholder="Muscle Group" class="mt-4">
+                <.select_trigger instance={select} target="my-select"/>
+                <.select_content instance={select}>
+                  <.select_group>
 
-              <%= for body_part <- [:all | Exercise.get_muscle_groups()] do %>
-                  <.select_item instance={select} value={body_part} label={body_part |> Atom.to_string() |> String.capitalize()} ></.select_item>
-                <% end %>
-              </.select_group>
-            </.select_content>
-          </.select>
+                  <%= for body_part <- [:all | Exercise.get_muscle_groups()] do %>
+                      <.select_item instance={select} value={body_part} label={body_part |> Atom.to_string() |> String.capitalize()} ></.select_item>
+                    <% end %>
+                  </.select_group>
+                </.select_content>
+              </.select>
 
-          <.select :let={select} id="equipment-select" name="equipment" target="equipment-select" placeholder="Equipment" class="mt-4">
-            <.select_trigger instance={select} target="equipment-select"/>
-            <.select_content instance={select}>
-              <.select_group>
+              <.select :let={select} id="equipment-select" name="equipment" target="equipment-select" placeholder="Equipment" class="mt-4">
+                <.select_trigger instance={select} target="equipment-select"/>
+                <.select_content instance={select}>
+                  <.select_group>
 
-              <%= for equipment <- ["all" | Exercises.get_all_equipment()] do %>
-                  <.select_item instance={select} value={equipment} label={String.capitalize(equipment)} ></.select_item>
-                <% end %>
-              </.select_group>
-            </.select_content>
-          </.select>
+                  <%= for equipment <- ["all" | Exercises.get_all_equipment()] do %>
+                      <.select_item instance={select} value={equipment} label={String.capitalize(equipment)} ></.select_item>
+                    <% end %>
+                  </.select_group>
+                </.select_content>
+              </.select>
+            </div>
+          </.card_content>
+          <.card_footer class="flex justify-start">
+            <%= for filter <- @filters |> Map.drop([:name]) |> Map.values() |> Enum.filter(&(&1 != "all")) do %>
+              <.badge variant="outline" class="text-sm">
+                <%= filter %>
+              </.badge>
+            <% end %>
+          </.card_footer>
+        </.card>
 
           <div class="flex flex-col gap-4 h-48 overflow-scroll my-4 px-4 border">
             <%= for %Exercise{name: name} <- @filtered_exercises do %>
