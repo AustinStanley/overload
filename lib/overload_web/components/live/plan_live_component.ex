@@ -4,8 +4,8 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
   import OverloadWeb.Components.Hero
   import OverloadWeb.CoreComponents, except: [button: 1]
+  import SaladUI.Select
   import SaladUI.Button
-
   alias Overload.Template
   alias Overload.Exercise
   alias Overload.Exercises
@@ -19,6 +19,17 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
       <.modal id="add-exercise-modal">
         <.form for={@exercise_form} phx-change="filter_exercises" phx-submit="save" phx-target={@myself} as={:exercise}>
           <.input type="text" name="name" placeholder="Filter" value={@exercise_form[:name].value} />
+          <.select :let={select} id="body-part-select" name="body_part" target="my-select" placeholder="Body Part" class="mt-4">
+            <.select_trigger instance={select} target="my-select"/>
+            <.select_content instance={select}>
+              <.select_group>
+
+              <%= for body_part <- Exercise.get_muscle_groups() do %>
+                  <.select_item instance={select} value={body_part} label={body_part |> Atom.to_string() |> String.capitalize()} ></.select_item>
+                <% end %>
+              </.select_group>
+            </.select_content>
+          </.select>
           <div class="flex flex-col gap-4 h-48 overflow-scroll my-4 px-4 border">
             <%= for %Exercise{name: name} <- @filtered_exercises do %>
               <div>
@@ -47,7 +58,16 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
      |> assign(exercise_form: exercise_form)
      |> assign(template_exercises: [])
      |> assign(all_exercises: exercises)
-     |> assign(filtered_exercises: exercises)}
+     |> assign(filtered_exercises: exercises)
+     |> assign(filters: %{name: "", body_part: :all})}
+  end
+
+  defp apply_filters(exercises, filters) do
+    exercises
+    |> Enum.filter(fn exercise ->
+      String.contains?(String.downcase(exercise.name), String.downcase(filters.name))
+      and (filters.body_part == :all or String.to_atom(filters.body_part) in exercise.primary_muscles)
+    end)
   end
 
   @impl true
@@ -63,9 +83,17 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
   end
 
   @impl true
+  def handle_event("filter_exercises", %{"body_part" => body_part}, %{assigns: %{all_exercises: all_exercises}} = socket) do
+    filters = %{socket.assigns.filters | body_part: body_part}
+    res = apply_filters(all_exercises, filters)
+    {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
+  end
+
+  @impl true
   def handle_event("filter_exercises", %{"name" => name}, %{assigns: %{all_exercises: all_exercises}} = socket) do
-    filtered_exercises = all_exercises |> Enum.filter(fn exercise -> String.contains?(String.downcase(exercise.name), String.downcase(name)) end)
-    {:noreply, assign(socket, :filtered_exercises, filtered_exercises)}
+    filters = %{socket.assigns.filters | name: name}
+    res = apply_filters(all_exercises, filters)
+    {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
   end
 
   defp render_content(%{action: :plan_meso} = assigns) do
@@ -79,8 +107,8 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
   defp render_content(%{action: :create_template} = assigns) do
     ~H"""
-    <div>
-      <h2>Create Workout Template</h2>
+    <div class="flex flex-col gap-4 items-center">
+      <h2 class="text-2xl font-bold">Create Workout Template</h2>
       <div>
         <.form for={@template_form} phx-change="validate" phx-submit="save" as={:template}>
           <.input type="text" name="name" placeholder="Template Name" value={@template_form[:name].value} />
@@ -107,9 +135,10 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
               </div>
             <% end %>
           </div>
-
-          <.button type="button" phx-click={show_modal("add-exercise-modal")} phx-target={@myself}>Add Exercise</.button>
-          <.button type="submit">Create Template</.button>
+          <div class="flex justify-center gap-4 mt-4">
+            <.button type="button" phx-click={show_modal("add-exercise-modal")} phx-target={@myself}>Add Exercise</.button>
+            <.button type="submit" disabled>Create Template</.button>
+          </div>
         </.form>
       </div>
     </div>
