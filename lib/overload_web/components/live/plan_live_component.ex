@@ -57,9 +57,10 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
               </.select>
             </div>
           </.card_content>
-          <.card_footer class="flex justify-start">
+          <.card_footer class="flex justify-start border-t-2 pt-2 gap-2">
             <%= for filter <- @filters |> Map.drop([:name]) |> Map.values() |> Enum.filter(&(&1 != "all")) do %>
-              <.badge variant="outline" class="text-sm">
+              <.badge variant="outline" class="text-sm gap-1 cursor-pointer" phx-click="clear_filter" phx-value-filter={filter} phx-target={@myself}>
+                <.icon name="hero-x-mark-mini" class="w-3 h-3" />
                 <%= filter %>
               </.badge>
             <% end %>
@@ -137,6 +138,14 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
   def handle_event("filter_exercises", %{"name" => name}, %{assigns: %{all_exercises: all_exercises}} = socket) do
     filters = %{socket.assigns.filters | name: name}
     res = apply_filters(all_exercises, filters)
+    {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
+  end
+
+  @impl true
+  def handle_event("clear_filter", %{"filter" => filter}, socket) do
+    key = Map.to_list(socket.assigns.filters) |> Enum.find(fn {_, v} -> v == filter end) |> elem(0)
+    filters = Map.replace!(socket.assigns.filters, key, "all")
+    res = apply_filters(socket.assigns.all_exercises, filters)
     {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
   end
 
