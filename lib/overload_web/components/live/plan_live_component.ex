@@ -21,7 +21,7 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
         <.form
           for={@exercise_form}
           phx-change="filter_exercises"
-          phx-submit="save"
+          phx-submit="save_exercise"
           phx-target={@myself}
           as={:exercise}
         >
@@ -98,8 +98,17 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
           </.card>
 
           <.scroll_area class="h-48 rounded-md border my-4 p-4">
-            <%= for %Exercise{name: name} <- @filtered_exercises do %>
-              <div>
+            <%= for %Exercise{id: id, name: name} <- @filtered_exercises do %>
+              <div
+                class={
+                  if assigns[:selected_exercise] && id == assigns[:selected_exercise].id,
+                    do: "bg-slate-100",
+                    else: ""
+                }
+                phx-click="select_exercise"
+                phx-value-exercise={id}
+                phx-target={@myself}
+              >
                 <%= name %>
               </div>
               <.separator class="my-2" />
@@ -194,6 +203,27 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
     filters = Map.replace!(socket.assigns.filters, key, "all")
     res = apply_filters(socket.assigns.all_exercises, filters)
     {:noreply, socket |> assign(filtered_exercises: res) |> assign(filters: filters)}
+  end
+
+  @impl true
+  def handle_event("select_exercise", %{"exercise" => exercise}, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       selected_exercise:
+         socket.assigns.filtered_exercises
+         |> Enum.find(fn x -> x.id == String.to_integer(exercise) end)
+     )}
+  end
+
+  @impl true
+  def handle_event("save_exercise", %{"exercise" => exercise} = map, socket) do
+    IO.inspect(map)
+    updated_exercises = [exercise | socket.assigns.template_exercises]
+    updated_form = Map.put(socket.assigns.template_form, :exercises, updated_exercises)
+
+    {:noreply,
+     socket |> assign(template_exercises: updated_exercises, template_form: updated_form)}
   end
 
   defp render_content(%{action: :plan_meso} = assigns) do
