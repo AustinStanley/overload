@@ -7,9 +7,9 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
 
   import SaladUI.{Select, Button, Card, Badge, ScrollArea, Separator}
 
-  alias Overload.Template
   alias Overload.Exercise
   alias Overload.Exercises
+  alias Overload.Template
 
   @impl true
   def render(assigns) do
@@ -17,7 +17,7 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
     <div>
       <%= render_content(assigns) %>
 
-      <.modal id="add-exercise-modal">
+      <.modal id="add-exercise-modal" :if={@show_exercise_modal} show>
         <.form
           for={@exercise_form}
           phx-change="filter_exercises"
@@ -137,7 +137,8 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
      |> assign(template_exercises: [])
      |> assign(all_exercises: exercises)
      |> assign(filtered_exercises: exercises)
-     |> assign(filters: %{name: "", body_part: "all", equipment: "all"})}
+     |> assign(filters: %{name: "", body_part: "all", equipment: "all"})
+     |> assign(show_exercise_modal: false)}
   end
 
   defp apply_filters(exercises, filters) do
@@ -217,13 +218,27 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
   end
 
   @impl true
-  def handle_event("save_exercise", %{"exercise" => exercise} = map, socket) do
-    IO.inspect(map)
-    updated_exercises = [exercise | socket.assigns.template_exercises]
+  def handle_event("save_exercise", _params, socket) do
+    IO.inspect(socket.assigns.selected_exercise)
+    updated_exercises = [socket.assigns.selected_exercise | socket.assigns.template_exercises]
     updated_form = Map.put(socket.assigns.template_form, :exercises, updated_exercises)
 
     {:noreply,
-     socket |> assign(template_exercises: updated_exercises, template_form: updated_form)}
+     socket
+     |> assign(template_exercises: updated_exercises, template_form: updated_form)
+     |> assign(show_exercise_modal: false)}
+  end
+
+  @impl true
+  def handle_event("remove_exercise", %{"index" => index}, socket) do
+    updated_exercises = List.delete(socket.assigns.template_exercises, Enum.at(socket.assigns.template_exercises, String.to_integer(index)))
+    updated_form = Map.put(socket.assigns.template_form, :exercises, updated_exercises)
+    {:noreply, socket |> assign(template_exercises: updated_exercises, template_form: updated_form)}
+  end
+
+  @impl true
+  def handle_event("toggle_exercise_modal", _params, socket) do
+    {:noreply, socket |> assign(show_exercise_modal: !socket.assigns.show_exercise_modal)}
   end
 
   defp render_content(%{action: :plan_meso} = assigns) do
@@ -251,61 +266,17 @@ defmodule OverloadWeb.Components.Live.PlanComponent do
           <div id="exercises">
             <%= for {exercise, index} <- Enum.with_index(@template_exercises) do %>
               <div class="exercise-container">
-                <.input
-                  type="text"
-                  name={"template[exercises][#{index}][body_part]"}
-                  placeholder="Body Part"
-                  value={exercise.body_part}
-                />
-                <.input
-                  type="text"
-                  name={"template[exercises][#{index}][type]"}
-                  placeholder="Exercise Type"
-                  value={exercise.type}
-                />
-
-                <div class="sets-container">
-                  <%= for {set, set_index} <- Enum.with_index(exercise.sets || []) do %>
-                    <div class="set-inputs">
-                      <.input
-                        type="number"
-                        name={"template[exercises][#{index}][sets][#{set_index}][rep_range_min]"}
-                        placeholder="Min Reps"
-                        value={set.rep_range_min}
-                      />
-                      <.input
-                        type="number"
-                        name={"template[exercises][#{index}][sets][#{set_index}][rep_range_max]"}
-                        placeholder="Max Reps"
-                        value={set.rep_range_max}
-                      />
-                      <.input
-                        type="number"
-                        name={"template[exercises][#{index}][sets][#{set_index}][rir]"}
-                        placeholder="RIR"
-                        value={set.rir}
-                      />
-                      <.input
-                        type="number"
-                        name={"template[exercises][#{index}][sets][#{set_index}][n_times]"}
-                        placeholder="Times"
-                        value={set.n_times}
-                      />
-                    </div>
-                  <% end %>
-                  <.button type="button" phx-click="add_set" phx-value-exercise={index}>
-                    Add Set
-                  </.button>
+                <div class="flex gap-2 items-center">
+                  <div class="cursor-pointer" phx-click="remove_exercise" phx-value-index={index} phx-target={@myself}>
+                    <.icon name="hero-x-mark" class="w-4 h-4" />
+                  </div>
+                  <%= exercise.name %>
                 </div>
-
-                <.button type="button" phx-click="remove_exercise" phx-value-index={index}>
-                  Remove Exercise
-                </.button>
               </div>
             <% end %>
           </div>
           <div class="flex justify-center gap-4 mt-4">
-            <.button type="button" phx-click={show_modal("add-exercise-modal")} phx-target={@myself}>
+            <.button type="button" phx-click="toggle_exercise_modal" phx-target={@myself}>
               Add Exercise
             </.button>
             <.button type="submit" disabled>Create Template</.button>
