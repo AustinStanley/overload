@@ -1,0 +1,107 @@
+<div>
+  <%= render_content(assigns) %>
+
+  <.modal :if={@show_exercise_modal} id="add-exercise-modal" show>
+    <.form
+      for={@exercise_form}
+      phx-change="filter_exercises"
+      phx-submit="save_exercise"
+      phx-target={@myself}
+      as={:exercise}
+    >
+      <.card>
+        <.card_header>
+          <.card_title>
+            Filters
+          </.card_title>
+        </.card_header>
+        <.card_content>
+          <.input type="text" name="name" placeholder="Name" value={@exercise_form[:name].value} />
+          <div class="flex gap-4">
+            <.select
+              :let={select}
+              id="body-part-select"
+              name="body_part"
+              target="my-select"
+              placeholder="Muscle Group"
+              class="mt-4"
+            >
+              <.select_trigger instance={select} target="my-select" />
+              <.select_content instance={select}>
+                <.select_group>
+                  <%= for body_part <- [:all | Exercise.get_muscle_groups()] do %>
+                    <.select_item
+                      instance={select}
+                      value={body_part}
+                      label={body_part |> Atom.to_string() |> String.capitalize()}
+                    >
+                    </.select_item>
+                  <% end %>
+                </.select_group>
+              </.select_content>
+            </.select>
+
+            <.select
+              :let={select}
+              id="equipment-select"
+              name="equipment"
+              target="equipment-select"
+              placeholder="Equipment"
+              class="mt-4"
+            >
+              <.select_trigger instance={select} target="equipment-select" />
+              <.select_content instance={select}>
+                <.select_group>
+                  <%= for equipment <- ["all" | Exercises.get_all_equipment()] do %>
+                    <.select_item
+                      instance={select}
+                      value={equipment}
+                      label={String.capitalize(equipment)}
+                    >
+                    </.select_item>
+                  <% end %>
+                </.select_group>
+              </.select_content>
+            </.select>
+          </div>
+        </.card_content>
+        <.card_footer class="flex justify-start pt-2 gap-2">
+          <%= for filter <- @filters |> Map.drop([:name]) |> Map.values() |> Enum.filter(&(&1 != "all")) do %>
+            <.badge
+              variant="outline"
+              class="text-sm gap-1 cursor-pointer"
+              phx-click="clear_filter"
+              phx-value-filter={filter}
+              phx-target={@myself}
+            >
+              <.icon name="hero-x-mark-mini" class="w-3 h-3" />
+              <%= filter %>
+            </.badge>
+          <% end %>
+        </.card_footer>
+      </.card>
+
+      <.scroll_area class="h-48 rounded-md border my-4 p-4">
+        <%= for %Exercise{id: id, name: name} <- @filtered_exercises do %>
+          <div
+            class={
+              if assigns[:selected_exercise] && id == assigns[:selected_exercise].id,
+                do: "bg-slate-100",
+                else: ""
+            }
+            phx-click="select_exercise"
+            phx-value-exercise={id}
+            phx-target={@myself}
+          >
+            <%= name %>
+          </div>
+          <.separator class="my-2" />
+        <% end %>
+      </.scroll_area>
+      <div class="flex justify-between">
+        <.button type="submit">Add Exercise</.button>
+        <.button type="">Create Exercise</.button>
+      </div>
+    </.form>
+  </.modal>
+</div>
