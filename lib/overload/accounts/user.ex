@@ -42,6 +42,8 @@ defmodule Overload.Accounts.User do
     |> validate_password(opts)
   end
 
+  def registration_changeset_no_opts(user, attrs), do: registration_changeset(user, attrs, [])
+
   defp validate_email(changeset, opts) do
     changeset
     |> validate_required([:email])

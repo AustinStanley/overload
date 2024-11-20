@@ -53,4 +53,10 @@ defmodule Overload.Exercises do
       get_by_mechanic_bodypart(unquote(mechanic), unquote(body_part))
     end
   end
+
+  def create_exercise(attrs \\ %{}) do
+    %Exercise{}
+    |> Exercise.changeset(attrs)
+    |> Repo.insert()
+  end
 end
